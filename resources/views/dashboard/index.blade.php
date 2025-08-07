@@ -142,6 +142,188 @@
             </div>
         </div>
 
+        <!-- Performance Alerts Section -->
+        @if(isset($performanceAlerts) && count($performanceAlerts) > 0)
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <svg class="w-6 h-6 text-orange-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    <h3 class="text-lg font-semibold text-orange-800">Performance Alerts</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($performanceAlerts as $alert)
+                    <div class="bg-white rounded-lg p-4 border border-orange-200">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {{ $alert['priority'] === 'high' ? 'bg-red-100 text-red-800' : 
+                                       ($alert['priority'] === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800') }}">
+                                    {{ ucfirst($alert['priority']) }}
+                                </span>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <h4 class="text-sm font-medium text-gray-900">{{ $alert['title'] ?? 'Alert' }}</h4>
+                                <p class="text-sm text-gray-600 mt-1">{{ $alert['message'] ?? 'Performance issue detected' }}</p>
+                                @if(isset($alert['action']))
+                                <p class="text-xs text-gray-500 mt-2">Recommended: {{ $alert['action'] }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Real-Time Analytics Dashboard -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Live Metrics -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Live Metrics</h3>
+                    <div class="flex items-center text-sm text-green-600">
+                        <div class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                        Real-time
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    @if(isset($liveMetrics['current_hour_appointments']))
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">This Hour</span>
+                        <span class="text-lg font-semibold text-gray-900">{{ $liveMetrics['current_hour_appointments'] }} appointments</span>
+                    </div>
+                    @endif
+                    @if(isset($realTimeMetrics['appointments_today']))
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Today Total</span>
+                        <span class="text-lg font-semibold text-gray-900">{{ $realTimeMetrics['appointments_today'] }} appointments</span>
+                    </div>
+                    @endif
+                    @if(isset($realTimeMetrics['revenue_today']))
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Today Revenue</span>
+                        <span class="text-lg font-semibold text-green-600">${{ number_format($realTimeMetrics['revenue_today'], 2) }}</span>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Hourly Trends -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Hourly Trends</h3>
+                <div class="space-y-3">
+                    @if(isset($hourlyTrends) && is_array($hourlyTrends))
+                        @foreach(array_slice($hourlyTrends, -6) as $hour => $data)
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">{{ $hour }}:00</span>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm font-medium text-gray-900">{{ $data['appointments'] ?? 0 }} appointments</span>
+                                <div class="w-16 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: {{ min(100, ($data['appointments'] ?? 0) * 10) }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    @else
+                        <p class="text-sm text-gray-500">No hourly data available</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Location Analytics -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Multi-Location Performance</h3>
+                    <div class="space-y-4">
+                        @foreach($locations as $location)
+                        @php
+                            $locationData = $locationAnalytics[$location->id] ?? [];
+                            $analytics = $locationData['analytics'] ?? [];
+                            $capacity = $locationData['capacity'] ?? [];
+                            $utilization = $locationData['utilization'] ?? 0;
+                        @endphp
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full mr-3 {{ $location->is_open ? 'bg-green-400' : 'bg-red-400' }}"></div>
+                                    <h4 class="font-medium text-gray-900">{{ $location->name }}</h4>
+                                    <span class="ml-2 text-sm text-gray-500">{{ $location->address }}</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    @if(isset($capacity['utilization_percentage']))
+                                    <span class="text-sm font-medium text-gray-600">{{ $capacity['utilization_percentage'] }}% utilized</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-4 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Total Appointments</span>
+                                    <div class="font-medium">{{ $analytics['total_appointments'] ?? 0 }}</div>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Revenue</span>
+                                    <div class="font-medium">${{ number_format($analytics['revenue'] ?? 0, 2) }}</div>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Completion Rate</span>
+                                    <div class="font-medium">{{ $analytics['completion_rate'] ?? 0 }}%</div>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Available Slots</span>
+                                    <div class="font-medium">{{ $capacity['available_slots'] ?? 0 }}</div>
+                                </div>
+                            </div>
+                            @if(isset($capacity['utilization_percentage']))
+                            <div class="mt-3">
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: {{ min(100, $capacity['utilization_percentage']) }}%"></div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location Recommendations -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Location Recommendations</h3>
+                <div class="space-y-4">
+                    @if(isset($locationRecommendations) && count($locationRecommendations) > 0)
+                        @foreach(array_slice($locationRecommendations, 0, 3) as $recommendation)
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-medium text-gray-900">{{ $recommendation['location']->name }}</h4>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {{ $recommendation['priority'] === 'high' ? 'bg-red-100 text-red-800' : 
+                                       ($recommendation['priority'] === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
+                                    {{ ucfirst($recommendation['priority']) }}
+                                </span>
+                            </div>
+                            @foreach($recommendation['suggestions'] as $suggestion)
+                            <div class="mb-3 last:mb-0">
+                                <h5 class="text-sm font-medium text-gray-700">{{ $suggestion['title'] ?? $suggestion['type'] }}</h5>
+                                <p class="text-xs text-gray-600 mt-1">{{ $suggestion['message'] }}</p>
+                                @if(isset($suggestion['action']))
+                                <p class="text-xs text-blue-600 mt-1">→ {{ $suggestion['action'] }}</p>
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
+                        @endforeach
+                    @else
+                        <p class="text-sm text-gray-500">All locations are performing optimally!</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left Column - Analytics -->
@@ -242,10 +424,10 @@
                     </div>
                 </div>
 
-                <!-- Calendar Integrations -->
+                <!-- Enhanced Calendar Integrations -->
                 <div class="bg-white shadow rounded-lg p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Calendar Sync</h3>
+                        <h3 class="text-lg font-medium text-gray-900">Advanced Calendar Sync</h3>
                         @if(auth()->user()->role === 'admin')
                         <a href="{{ route('calendar.index') }}" class="text-indigo-600 hover:text-indigo-500 text-sm font-medium">
                             Manage →
@@ -254,43 +436,101 @@
                     </div>
                     <div class="space-y-3">
                         @forelse($calendarIntegrations as $integration)
-                        <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    @if($integration->provider === 'google')
-                                        <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
-                                            <span class="text-white text-xs font-bold">G</span>
-                                        </div>
-                                    @elseif($integration->provider === 'outlook')
-                                        <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                                            <span class="text-white text-xs font-bold">O</span>
-                                        </div>
+                        @php
+                            $status = $calendarSyncStatus[$integration->id] ?? [];
+                        @endphp
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        @if($integration->provider === 'google')
+                                            <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                                                <span class="text-white text-sm font-bold">G</span>
+                                            </div>
+                                        @elseif($integration->provider === 'outlook')
+                                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                                <span class="text-white text-sm font-bold">O</span>
+                                            </div>
+                                        @elseif($integration->provider === 'apple')
+                                            <div class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
+                                                <span class="text-white text-sm font-bold">A</span>
+                                            </div>
+                                        @else
+                                            <div class="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center">
+                                                <span class="text-white text-sm font-bold">C</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">{{ $integration->name }}</p>
+                                        <p class="text-xs text-gray-500">{{ ucfirst($integration->provider) }} Calendar</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    @if($status['is_active'] ?? false)
+                                        @if($status['needs_token_refresh'] ?? false)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                                Token Refresh Needed
+                                            </span>
+                                        @elseif($status['can_sync'] ?? false)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Active
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                Sync Pending
+                                            </span>
+                                        @endif
                                     @else
-                                        <div class="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center">
-                                            <span class="text-white text-xs font-bold">C</span>
-                                        </div>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            Inactive
+                                        </span>
                                     @endif
                                 </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">{{ $integration->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ $calendarSyncStatus[$integration->id]['last_sync'] ?? 'Never' }}</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Last Sync</span>
+                                    <div class="font-medium">{{ $status['last_sync'] ?? 'Never' }}</div>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Sync Status</span>
+                                    <div class="font-medium">{{ $status['sync_status'] ?? 'Unknown' }}</div>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Auto-Sync</span>
+                                    <div class="font-medium">{{ $integration->is_active ? 'Enabled' : 'Disabled' }}</div>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                @php
-                                    $status = $calendarSyncStatus[$integration->id] ?? [];
-                                    $statusClass = $status['is_active'] ?? false ? ($status['needs_sync'] ?? false ? 'pending' : 'synced') : 'error';
-                                    $statusText = $status['is_active'] ?? false ? ($status['needs_sync'] ?? false ? 'Pending' : 'Synced') : 'Inactive';
-                                @endphp
-                                <span class="sync-status {{ $statusClass }} text-xs font-medium">{{ $statusText }}</span>
+                            
+                            @if($integration->sync_frequency)
+                            <div class="mt-2 text-xs text-gray-500">
+                                Sync frequency: {{ ucfirst($integration->sync_frequency) }}
                             </div>
+                            @endif
+                            
+                            @if(($status['needs_token_refresh'] ?? false) || !($status['can_sync'] ?? false))
+                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                <button class="text-xs text-indigo-600 hover:text-indigo-500 font-medium">
+                                    Fix Sync Issue →
+                                </button>
+                            </div>
+                            @endif
                         </div>
                         @empty
-                        <div class="text-center py-4">
-                            <p class="text-gray-500 text-sm">No calendar integrations</p>
+                        <div class="text-center py-6 border border-gray-200 rounded-lg">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-gray-500 text-sm mt-2">No calendar integrations configured</p>
+                            <p class="text-xs text-gray-400 mt-1">Connect your calendar to sync appointments automatically</p>
                             @if(auth()->user()->role === 'admin')
-                            <a href="{{ route('calendar.create') }}" class="text-indigo-600 hover:text-indigo-500 text-sm font-medium">
-                                Add Integration →
+                            <a href="{{ route('calendar.create') }}" class="inline-flex items-center mt-3 text-indigo-600 hover:text-indigo-500 text-sm font-medium">
+                                <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Add Calendar Integration
                             </a>
                             @endif
                         </div>

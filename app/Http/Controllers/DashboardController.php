@@ -68,9 +68,14 @@ class DashboardController extends Controller
         $analytics = $this->analyticsService->getDashboardAnalytics($company, $days);
         
         // Get real-time metrics and performance alerts
-        $liveMetrics = $this->realTimeAnalytics->getLiveAppointmentMetrics($company);
+        $realTimeMetrics = $this->realTimeAnalytics->getRealTimeMetrics($company);
         $performanceAlerts = $this->realTimeAnalytics->getPerformanceAlerts($company);
-        $hourlyTrends = $this->realTimeAnalytics->getHourlyTrends($company);
+        
+        // Extract specific metrics from real-time data
+        $liveMetrics = $realTimeMetrics['live_appointments'] ?? [];
+        $hourlyTrends = $realTimeMetrics['hourly_trends'] ?? [];
+        $locationActivity = $realTimeMetrics['location_activity'] ?? [];
+        $staffMetrics = $realTimeMetrics['staff_monitoring'] ?? [];
         
         // Get enhanced location data with GPS intelligence
         $locations = $this->locationService->getCompanyLocationsWithAvailability($company);
@@ -99,12 +104,6 @@ class DashboardController extends Controller
             ];
         }
         
-        // Get real-time location activity
-        $locationActivity = $this->realTimeAnalytics->getLocationActivityMetrics($company);
-        
-        // Get staff performance metrics
-        $staffMetrics = $this->realTimeAnalytics->getStaffPerformanceMetrics($company);
-        
         // Get recent appointments with location and sync info
         $recentAppointments = $company->appointments()
             ->with(['customer', 'service', 'location'])
@@ -118,6 +117,7 @@ class DashboardController extends Controller
         
         return view('dashboard.index', compact(
             'analytics',
+            'realTimeMetrics',
             'liveMetrics',
             'performanceAlerts',
             'hourlyTrends',
