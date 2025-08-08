@@ -60,6 +60,14 @@ class Service extends Model
     }
 
     /**
+     * Alias for getShareableBookingUrl() for consistency
+     */
+    public function getBookingUrl()
+    {
+        return $this->getShareableBookingUrl();
+    }
+
+    /**
      * Generate social media sharing data
      */
     public function getSocialMediaShareData()

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Task;
 use App\Services\AnalyticsService;
 use App\Services\LocationService;
 use App\Services\CalendarSyncService;
@@ -114,6 +115,22 @@ class DashboardController extends Controller
         // Get enhanced quick stats
         $quickStats = $this->getQuickStats($company);
         
+        // Get recent tasks with related data for Task Management dashboard section
+        $recentTasks = $company->tasks()
+            ->with(['assignedUser', 'appointment.customer', 'appointment.service'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+        
+        // Get task statistics
+        $taskStats = [
+            'total' => $company->tasks()->count(),
+            'pending' => $company->tasks()->where('status', 'pending')->count(),
+            'in_progress' => $company->tasks()->where('status', 'in_progress')->count(),
+            'completed' => $company->tasks()->where('status', 'completed')->count(),
+            'high_priority' => $company->tasks()->where('priority', 'high')->count(),
+        ];
+        
         return view('dashboard.index', compact(
             'analytics',
             'realTimeMetrics',
@@ -129,6 +146,8 @@ class DashboardController extends Controller
             'calendarSyncStatus',
             'recentAppointments',
             'quickStats',
+            'recentTasks',
+            'taskStats',
             'company',
             'days'
         ));

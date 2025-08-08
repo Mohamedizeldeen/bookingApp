@@ -570,9 +570,239 @@
                 </div>
             </div>
         </div>
+
+        <!-- Task Management Section -->
+        <div class="mt-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Task Stats -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Task Management</h3>
+                        <a href="{{ route('tasks.index') }}" class="text-indigo-600 hover:text-indigo-500 text-sm font-medium">
+                            View All →
+                        </a>
+                    </div>
+                    
+                    <!-- Task Statistics -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Total Tasks</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ $taskStats['total'] }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Pending</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ $taskStats['pending'] }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Completed</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ $taskStats['completed'] }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">High Priority</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ $taskStats['high_priority'] }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Tasks -->
+                    <div class="space-y-3">
+                        <h4 class="text-sm font-medium text-gray-700 mb-3">Recent Tasks</h4>
+                        @forelse($recentTasks->take(3) as $task)
+                        <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">{{ $task->title }}</p>
+                                <p class="text-xs text-gray-500">
+                                    Assigned to: {{ $task->assignedUser->name }}
+                                    @if($task->appointment)
+                                    | Related to: {{ $task->appointment->customer->name }}
+                                    @endif
+                                </p>
+                                @if($task->due_date)
+                                <p class="text-xs text-gray-400">Due: {{ $task->due_date->format('M j, Y') }}</p>
+                                @endif
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                    @if($task->priority === 'high') bg-red-100 text-red-800
+                                    @elseif($task->priority === 'medium') bg-yellow-100 text-yellow-800
+                                    @else bg-green-100 text-green-800
+                                    @endif">
+                                    {{ ucfirst($task->priority) }}
+                                </span>
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                    @if($task->status === 'completed') bg-green-100 text-green-800
+                                    @elseif($task->status === 'in_progress') bg-blue-100 text-blue-800
+                                    @else bg-gray-100 text-gray-800
+                                    @endif">
+                                    {{ ucfirst(str_replace('_', ' ', $task->status)) }}
+                                </span>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="text-center py-4">
+                            <p class="text-gray-500 text-sm">No recent tasks</p>
+                        </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- Online Booking Links for Social Media -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Share Booking Links</h3>
+                        <span class="text-sm text-gray-500">Promote your services</span>
+                    </div>
+
+                    @php
+                        $services = $company->services()->active()->get();
+                    @endphp
+
+                    @if($services->count() > 0)
+                    <div class="space-y-4">
+                        @foreach($services->take(3) as $service)
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-900">{{ $service->name }}</h4>
+                                    <p class="text-xs text-gray-500">${{ number_format($service->price, 2) }} • {{ $service->duration }} min</p>
+                                </div>
+                                <button type="button" 
+                                        onclick="copyBookingLink('{{ $service->getBookingUrl() }}')"
+                                        class="text-gray-400 hover:text-gray-600 focus:outline-none"
+                                        title="Copy booking link">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <!-- Booking URL -->
+                            <div class="mb-3">
+                                <input type="text" 
+                                       value="{{ $service->getBookingUrl() }}" 
+                                       readonly 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs font-mono bg-gray-50 text-gray-600"
+                                       onclick="this.select()">
+                            </div>
+
+                            <!-- Social Media Share Buttons -->
+                            @include('components.social-share', [
+                                'url' => $service->getBookingUrl(),
+                                'title' => 'Book ' . $service->name . ' - ' . $company->name,
+                                'description' => $service->description ?: 'Professional ' . $service->name . ' service',
+                                'size' => 'sm'
+                            ])
+                        </div>
+                        @endforeach
+
+                        @if($services->count() > 3)
+                        <div class="text-center">
+                            <a href="{{ route('services.index') }}" class="text-indigo-600 hover:text-indigo-500 text-sm font-medium">
+                                View all {{ $services->count() }} services →
+                            </a>
+                        </div>
+                        @endif
+                    </div>
+                    @else
+                    <div class="text-center py-8">
+                        <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        <p class="text-gray-500 text-sm mb-2">No active services available</p>
+                        <a href="{{ route('services.create') }}" class="text-indigo-600 hover:text-indigo-500 text-sm font-medium">
+                            Create your first service →
+                        </a>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+// Copy booking link functionality
+function copyBookingLink(url) {
+    navigator.clipboard.writeText(url).then(function() {
+        // Show success message
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+        });
+        
+        Toast.fire({
+            icon: 'success',
+            title: 'Booking link copied to clipboard!'
+        });
+    }, function(err) {
+        console.error('Could not copy text: ', err);
+        // Fallback for browsers that don't support clipboard API
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+        });
+        
+        Toast.fire({
+            icon: 'success',
+            title: 'Booking link copied to clipboard!'
+        });
+    });
+}
+</script>
+@endpush
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
