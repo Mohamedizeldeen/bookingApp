@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\CalendarIntegrationController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -27,6 +28,7 @@ Route::post('/signup', [Auth::class, 'register'])->name('signup');
 
 // Public booking routes
 Route::get('/book/{company}/{slug?}', [BookingController::class, 'showBookingPage'])->name('booking.page');
+Route::get('/book/{company}/service/{service}', [BookingController::class, 'showServiceBooking'])->name('booking.service');
 Route::post('/book/{company}', [BookingController::class, 'storeBooking'])->name('booking.store');
 Route::get('/booking-confirmation/{appointment}', [BookingController::class, 'showConfirmation'])->name('booking.confirmation');
 
@@ -40,6 +42,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/widget/{widget}', [DashboardController::class, 'getWidgetData'])->name('dashboard.widget');
     
     Route::post('/logout', [Auth::class, 'logout'])->name('logout');
+    Route::get('/logout', function() {
+        // Auto-logout for GET requests (browser navigation)
+        \Illuminate\Support\Facades\Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+        return redirect('/');
+    })->name('logout.confirm');
     
     // Admin only - User management
     Route::post('/add-user', [Auth::class, 'addUser'])->name('add.user');
@@ -77,8 +86,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/locations/find-nearest', [LocationController::class, 'findNearest'])->name('locations.find-nearest');
     Route::post('/locations/{location}/transfer', [LocationController::class, 'transferAppointments'])->name('locations.transfer');
     
+    // Task Management System
+    Route::resource('tasks', TaskController::class)->except(['edit', 'update', 'destroy']);
+    Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
+    Route::get('/tasks/dashboard/data', [TaskController::class, 'getDashboardData'])->name('tasks.dashboard-data');
+    
     // Calendar Integration Routes
-    Route::resource('calendar', CalendarIntegrationController::class, ['as' => 'calendar']);
+    Route::resource('calendar', CalendarIntegrationController::class);
     Route::get('/calendar/{calendar}/authorize', [CalendarIntegrationController::class, 'authorize'])->name('calendar.authorize');
     Route::get('/calendar/{calendar}/callback', [CalendarIntegrationController::class, 'callback'])->name('calendar.callback');
     Route::post('/calendar/{calendar}/sync', [CalendarIntegrationController::class, 'sync'])->name('calendar.sync');

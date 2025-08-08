@@ -216,9 +216,9 @@
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Hourly Trends</h3>
                 <div class="space-y-3">
                     @if(isset($hourlyTrends) && is_array($hourlyTrends))
-                        @foreach(array_slice($hourlyTrends, -6) as $hour => $data)
+                        @foreach(array_slice($hourlyTrends, -6) as $data)
                         <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">{{ $hour }}:00</span>
+                            <span class="text-sm text-gray-600">{{ $data['hour'] ?? '00:00' }}</span>
                             <div class="flex items-center space-x-4">
                                 <span class="text-sm font-medium text-gray-900">{{ $data['appointments'] ?? 0 }} appointments</span>
                                 <div class="w-16 bg-gray-200 rounded-full h-2">
@@ -370,11 +370,11 @@
                     </div>
                     <div class="mt-4 grid grid-cols-2 gap-4 text-center">
                         <div>
-                            <div class="text-2xl font-bold text-green-600">${{ number_format($analytics['revenue']['total'] ?? 0, 2) }}</div>
+                            <div class="text-2xl font-bold text-green-600">${{ number_format($analytics['revenue'] ?? 0, 2) }}</div>
                             <div class="text-sm text-gray-500">Total Revenue</div>
                         </div>
                         <div>
-                            <div class="text-2xl font-bold text-blue-600">${{ number_format($analytics['revenue']['average_per_appointment'] ?? 0, 2) }}</div>
+                            <div class="text-2xl font-bold text-blue-600">${{ number_format(($analytics['total_appointments'] > 0 ? $analytics['revenue'] / $analytics['total_appointments'] : 0), 2) }}</div>
                             <div class="text-sm text-gray-500">Avg per Appointment</div>
                         </div>
                     </div>
@@ -615,10 +615,10 @@ function initializeCharts() {
     revenueChart = new Chart(revenueCtx, {
         type: 'bar',
         data: {
-            labels: {!! json_encode(array_keys($analytics['revenue']['trend']->toArray() ?? [])) !!},
+            labels: {!! json_encode($analytics['chart_labels'] ?? []) !!},
             datasets: [{
                 label: 'Revenue',
-                data: {!! json_encode(array_values($analytics['revenue']['trend']->toArray() ?? [])) !!},
+                data: {!! json_encode($analytics['chart_revenue'] ?? []) !!},
                 backgroundColor: 'rgba(34, 197, 94, 0.6)',
                 borderColor: 'rgb(34, 197, 94)',
                 borderWidth: 1

@@ -63,6 +63,38 @@ class User extends Authenticatable
         return $this->hasMany(Appointment::class, 'assigned_user_id');
     }
 
+    /**
+     * Alias for assignedAppointments for easier access
+     */
+    public function appointments()
+    {
+        return $this->assignedAppointments();
+    }
+
+    /**
+     * Calendar integrations for this user
+     */
+    public function calendarIntegrations()
+    {
+        return $this->hasMany(CalendarIntegration::class);
+    }
+
+    /**
+     * Tasks assigned to this user
+     */
+    public function assignedTasks()
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    /**
+     * Tasks created by this user
+     */
+    public function createdTasks()
+    {
+        return $this->hasMany(Task::class, 'assigned_by');
+    }
+
     public function notifications()
     {
         return $this->hasMany(Notification::class);

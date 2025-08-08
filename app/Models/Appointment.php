@@ -65,6 +65,14 @@ class Appointment extends Model
         return $this->belongsTo(User::class, 'assigned_user_id');
     }
 
+    /**
+     * Alias for assignedUser for easier access
+     */
+    public function user()
+    {
+        return $this->assignedUser();
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');

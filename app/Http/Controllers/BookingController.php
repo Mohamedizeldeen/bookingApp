@@ -25,9 +25,27 @@ class BookingController extends Controller
             abort(404, 'Company not found');
         }
 
-        $services = $company->services()->get();
+        $services = $company->services()->where('is_active', true)->get();
         
         return view('booking.public', compact('company', 'services'));
+    }
+
+    /**
+     * Show the public booking page for a specific service.
+     */
+    public function showServiceBooking($companyId, $serviceId)
+    {
+        $company = Company::find($companyId);
+        $service = Service::where('company_id', $companyId)
+                         ->where('id', $serviceId)
+                         ->where('is_active', true)
+                         ->first();
+        
+        if (!$company || !$service) {
+            abort(404, 'Service not found');
+        }
+
+        return view('booking.service', compact('company', 'service'));
     }
 
     /**

@@ -67,10 +67,23 @@
                             <span class="hidden lg:block">Services</span>
                             <span class="lg:hidden">Services</span>
                         </a>
+                        <a href="{{ route('tasks.index') }}" class="flex items-center text-gray-700 hover:text-purple-600 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors">
+                            <i class="fas fa-tasks mr-1 lg:mr-2 text-xs lg:text-sm"></i>
+                            <span class="hidden lg:block">Tasks</span>
+                            <span class="lg:hidden">Tasks</span>
+                        </a>
                         <a href="{{ route('team.index') }}" class="flex items-center text-gray-700 hover:text-purple-600 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors">
                             <i class="fas fa-user-friends mr-1 lg:mr-2 text-xs lg:text-sm"></i>
                             <span class="hidden lg:block">Team</span>
                             <span class="lg:hidden">Team</span>
+                        </a>
+                    @endif
+                    
+                    @if(auth()->user() && auth()->user()->role !== 'admin')
+                        <a href="{{ route('tasks.index') }}" class="flex items-center text-gray-700 hover:text-purple-600 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors">
+                            <i class="fas fa-tasks mr-1 lg:mr-2 text-xs lg:text-sm"></i>
+                            <span class="hidden lg:block">My Tasks</span>
+                            <span class="lg:hidden">Tasks</span>
                         </a>
                     @endif
                 </div>
@@ -222,9 +235,20 @@
                                 <i class="fas fa-cogs mr-2 sm:mr-3 text-gray-400 w-4 sm:w-5 text-center"></i>
                                 Services
                             </a>
+                            <a href="{{ route('tasks.index') }}" class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
+                                <i class="fas fa-tasks mr-2 sm:mr-3 text-gray-400 w-4 sm:w-5 text-center"></i>
+                                Tasks
+                            </a>
                             <a href="{{ route('team.index') }}" class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
                                 <i class="fas fa-user-friends mr-2 sm:mr-3 text-gray-400 w-4 sm:w-5 text-center"></i>
                                 Team
+                            </a>
+                        @endif
+                        
+                        @if(auth()->user() && auth()->user()->role !== 'admin')
+                            <a href="{{ route('tasks.index') }}" class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
+                                <i class="fas fa-tasks mr-2 sm:mr-3 text-gray-400 w-4 sm:w-5 text-center"></i>
+                                My Tasks
                             </a>
                         @endif
                         

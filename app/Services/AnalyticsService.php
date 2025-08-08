@@ -214,12 +214,38 @@ class AnalyticsService
         $endDate = Carbon::today();
         $startDate = $endDate->copy()->subDays($days - 1);
 
+        $appointments = $this->getAppointmentAnalytics($company, $startDate, $endDate);
+        $revenue = $this->getRevenueAnalytics($company, $startDate, $endDate);
+        $customers = $this->getCustomerAnalytics($company, $startDate, $endDate);
+        $staff = $this->getStaffAnalytics($company, $startDate, $endDate);
+        $locations = $this->getLocationAnalytics($company, $startDate, $endDate);
+
+        // Return both flat and nested structure for compatibility
         return [
-            'appointments' => $this->getAppointmentAnalytics($company, $startDate, $endDate),
-            'revenue' => $this->getRevenueAnalytics($company, $startDate, $endDate),
-            'customers' => $this->getCustomerAnalytics($company, $startDate, $endDate),
-            'staff' => $this->getStaffAnalytics($company, $startDate, $endDate),
-            'locations' => $this->getLocationAnalytics($company, $startDate, $endDate),
+            // Flattened main metrics for backward compatibility
+            'total_appointments' => $appointments['total'] ?? 0,
+            'revenue' => $revenue['total'] ?? 0,
+            'new_customers' => $customers['new_customers'] ?? 0,
+            'completion_rate' => $appointments['completion_rate'] ?? 0,
+            'total_customers' => $customers['total_customers'] ?? 0,
+            'avg_rating' => 4.5, // Default placeholder
+            
+            // Nested structures
+            'appointments' => $appointments,
+            'revenue_details' => $revenue,
+            'customers' => $customers,
+            'staff' => $staff,
+            'locations' => $locations,
+            
+            // Chart data placeholders
+            'chart_labels' => [],
+            'chart_appointments' => [],
+            'chart_revenue' => [],
+            
+            // Additional placeholders
+            'top_services' => [],
+            'location_performance' => [],
+            'daily_breakdown' => [],
         ];
     }
 
@@ -387,8 +413,11 @@ class AnalyticsService
         
         foreach ($analytics as $metricName => $metrics) {
             foreach ($metrics as $metric) {
-                $staffId = $metric->metadata['staff_id'] ?? null;
-                $staffName = $metric->metadata['staff_name'] ?? 'Unknown';
+                // Ensure metadata is an array before accessing it
+                $metadata = is_array($metric->metadata) ? $metric->metadata : [];
+                
+                $staffId = $metadata['staff_id'] ?? null;
+                $staffName = $metadata['staff_name'] ?? 'Unknown';
                 
                 if ($staffId) {
                     if (!isset($staffPerformance[$staffId])) {
@@ -451,8 +480,11 @@ class AnalyticsService
         
         foreach ($analytics as $metricName => $metrics) {
             foreach ($metrics as $metric) {
-                $locationId = $metric->metadata['location_id'] ?? null;
-                $locationName = $metric->metadata['location_name'] ?? 'Unknown';
+                // Ensure metadata is an array before accessing it
+                $metadata = is_array($metric->metadata) ? $metric->metadata : [];
+                
+                $locationId = $metadata['location_id'] ?? null;
+                $locationName = $metadata['location_name'] ?? 'Unknown';
                 
                 if ($locationId) {
                     if (!isset($locationPerformance[$locationId])) {

@@ -37,14 +37,14 @@ class RealTimeAnalyticsService
     private function getLiveAppointments(Company $company): array
     {
         $now = now();
-        $currentHour = $now->format('H:00');
-        $nextHour = $now->addHour()->format('H:00');
+        $currentHour = $now->format('Y-m-d H:00:00');
+        $nextHour = $now->copy()->addHour()->format('Y-m-d H:00:00');
 
         $liveAppointments = $company->appointments()
             ->with(['customer', 'service', 'location', 'user'])
             ->whereDate('appointment_date', today())
             ->where(function ($query) use ($currentHour, $nextHour) {
-                $query->whereBetween('appointment_time', [$currentHour, $nextHour]);
+                $query->whereBetween('appointment_date', [$currentHour, $nextHour]);
             })
             ->whereIn('status', ['confirmed', 'in_progress'])
             ->get();
@@ -58,7 +58,7 @@ class RealTimeAnalyticsService
                     'service_name' => $appointment->service->name,
                     'location_name' => $appointment->location?->name,
                     'staff_name' => $appointment->user?->name,
-                    'time' => $appointment->appointment_time,
+                    'time' => $appointment->appointment_date->format('H:i'),
                     'status' => $appointment->status,
                     'duration' => $appointment->service->duration,
                 ];
@@ -85,7 +85,7 @@ class RealTimeAnalyticsService
 
         $lastHour = $company->appointments()
             ->whereDate('appointment_date', $today)
-            ->where('appointment_time', '>=', now()->subHour()->format('H:00'))
+            ->where('appointment_date', '>=', now()->subHour())
             ->where('status', 'completed')
             ->count();
 
@@ -110,13 +110,13 @@ class RealTimeAnalyticsService
     {
         $hourlyData = DB::table('appointments')
             ->select(
-                DB::raw('HOUR(appointment_time) as hour'),
+                DB::raw('HOUR(appointment_date) as hour'),
                 DB::raw('COUNT(*) as count'),
                 DB::raw('SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as completed')
             )
             ->where('company_id', $company->id)
             ->whereDate('appointment_date', today())
-            ->groupBy(DB::raw('HOUR(appointment_time)'))
+            ->groupBy(DB::raw('HOUR(appointment_date)'))
             ->orderBy('hour')
             ->get();
 
@@ -241,11 +241,10 @@ class RealTimeAnalyticsService
     private function getUserCurrentStatus($user): string
     {
         $now = now();
-        $currentTime = $now->format('H:i');
         
         $currentAppointment = $user->appointments()
             ->whereDate('appointment_date', today())
-            ->where('appointment_time', '<=', $currentTime)
+            ->where('appointment_date', '<=', $now)
             ->where('status', 'in_progress')
             ->first();
 
@@ -255,13 +254,13 @@ class RealTimeAnalyticsService
 
         $nextAppointment = $user->appointments()
             ->whereDate('appointment_date', today())
-            ->where('appointment_time', '>', $currentTime)
+            ->where('appointment_date', '>', $now)
             ->where('status', 'confirmed')
-            ->orderBy('appointment_time')
+            ->orderBy('appointment_date')
             ->first();
 
         if ($nextAppointment) {
-            $timeUntilNext = Carbon::parse($nextAppointment->appointment_time)->diffInMinutes($now);
+            $timeUntilNext = $nextAppointment->appointment_date->diffInMinutes($now);
             if ($timeUntilNext <= 30) {
                 return 'preparing';
             }
@@ -305,6 +304,7 @@ class RealTimeAnalyticsService
                 'type' => 'warning',
                 'message' => 'Today\'s completion rate is below 80%',
                 'value' => $metrics['today_performance']['completion_rate'] . '%',
+                'priority' => 'medium',
             ];
         }
 
@@ -314,6 +314,7 @@ class RealTimeAnalyticsService
                 'type' => 'error',
                 'message' => 'Calendar integrations have token issues',
                 'value' => $metrics['calendar_sync_health']['token_issues'] . ' affected',
+                'priority' => 'high',
             ];
         }
 
@@ -324,6 +325,7 @@ class RealTimeAnalyticsService
                     'type' => 'info',
                     'message' => "Location '{$location['name']}' is near capacity",
                     'value' => $location['utilization'] . '% utilized',
+                    'priority' => 'low',
                 ];
             }
         }

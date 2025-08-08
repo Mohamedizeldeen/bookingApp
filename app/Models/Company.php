@@ -84,6 +84,11 @@ class Company extends Model
         return $this->hasMany(Analytics::class);
     }
 
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

@@ -108,7 +108,6 @@ class DashboardController extends Controller
         $recentAppointments = $company->appointments()
             ->with(['customer', 'service', 'location'])
             ->orderBy('appointment_date', 'desc')
-            ->orderBy('appointment_time', 'desc')
             ->limit(10)
             ->get();
         
@@ -212,7 +211,7 @@ class DashboardController extends Controller
                     return $query->where('assigned_user_id', $user->id);
                 }
             })
-            ->orderBy('appointment_time')
+            ->orderBy('appointment_date')
             ->get();
         
         // Get upcoming appointments
@@ -227,7 +226,6 @@ class DashboardController extends Controller
                 }
             })
             ->orderBy('appointment_date')
-            ->orderBy('appointment_time')
             ->limit(20)
             ->get();
         
