@@ -724,12 +724,17 @@
                             </div>
 
                             <!-- Social Media Share Buttons -->
-                            @include('components.social-share', [
-                                'url' => $service->getBookingUrl(),
-                                'title' => 'Book ' . $service->name . ' - ' . $company->name,
-                                'description' => $service->description ?: 'Professional ' . $service->name . ' service',
-                                'size' => 'sm'
-                            ])
+                                @include('components.social-share', [
+                                    'shareData' => [
+                                        'url' => $service->getBookingUrl(),
+                                        'facebook_url' => 'https://www.facebook.com/sharer/sharer.php?u=' . urlencode($service->getBookingUrl()),
+                                        'twitter_url' => 'https://twitter.com/intent/tweet?url=' . urlencode($service->getBookingUrl()) . '&text=' . urlencode('Book ' . $service->name . ' - ' . $company->name),
+                                        'linkedin_url' => 'https://www.linkedin.com/shareArticle?mini=true&url=' . urlencode($service->getBookingUrl()) . '&title=' . urlencode('Book ' . $service->name . ' - ' . $company->name),
+                                        'whatsapp_url' => 'https://wa.me/?text=' . urlencode($service->getBookingUrl()),
+                                        'email_url' => 'mailto:?subject=' . urlencode('Book ' . $service->name . ' - ' . $company->name) . '&body=' . urlencode($service->getBookingUrl()),
+                                    ],
+                                    'serviceId' => $service->id ?? 'default'
+                                ])
                         </div>
                         @endforeach
 
